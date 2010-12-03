@@ -1,0 +1,14 @@
+COPYRIGHT (c) 2010 Yann Sionneau <yann dot sionneau at telecom-sudparis dot eu>
+
+This is a simple proof of concept software that does Woman in the middle attack.
+
+Using this, you can take place of the router, in order to watch the traffic of the other persons of your network.
+
+You go from this : 
+
+{Internet} <--> <Router> <--> Target
+                      î <---> You
+
+To this : 
+
+{Internet} <--> <Router> <--> <YOU> <--> <Target>
