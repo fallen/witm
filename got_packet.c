@@ -76,6 +76,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 	eth_addr_t router_mac_addr;
 	uint16_t type;
 	ip_addr_t ip_addr_dest;
+	eth_addr_t eth_addr_dest;
 	ip_addr_t router_ip_addr;
 	char *arguments = strdup(args);
 	char *ip_router_string;
@@ -122,7 +123,6 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 		uint32_t target_ip_addr;
 		memcpy(&arp_header, packet + sizeof(struct eth_hdr), sizeof(struct arp_hdr));
 		memcpy(&arp_payload, packet + sizeof(struct eth_hdr) + sizeof(struct arp_hdr), sizeof(struct arp_ethip));
-		memcpy(&ip_addr_dest, arp_payload.ar_tpa, IP_ADDR_LEN);
 
 		opcode = ntohs(arp_header.ar_op);
 
@@ -136,7 +136,13 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 			arp_answer(eth_pack.eth_src, router_mac_addr, arp_payload.ar_spa, arp_payload.ar_tpa);
 
 		}
-	} else {
-		
+	} else if (type == ETH_TYPE_IP) {
+		struct ip_hdr ip_header;
+		memcpy(&ip_header, packet + sizeof(struct eth_hdr), sizeof(struct ip_hdr));
+
+	//	if ((memcmp(my_mac_addr, eth_hdr.eth_dst, ETH_ADDR_LEN) == 0) && (ip_header.ip_dst != ))
+
 	}
+
+
 }
