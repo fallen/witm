@@ -13,15 +13,16 @@ pcap_t *handle;
 eth_addr_t my_mac_addr;
 
 int main(int argc, char **argv) {
-	char *mask;
 	int ret;
 	bpf_u_int32 netp;
 	bpf_u_int32 maskp;
 	char errbuf[PCAP_ERRBUF_SIZE];
-	const u_char *packet;
-	struct pcap_pkthdr header;
-	char arguments[51];
+	unsigned char arguments[51];
 
+	if (argc < 5) {
+		printf("usage : witm networkInterface routerIpAddress routerMacAddress yourMacAddress\n");
+		exit(1);
+	}
 
 	ret = pcap_lookupnet(argv[1], &netp, &maskp, errbuf);
 
@@ -44,7 +45,7 @@ int main(int argc, char **argv) {
 	printf("Router MAC addr : ");
 	print_mac_address(router_addr);
 	printf("\n\n");
-	sprintf(arguments, "%s;%s;%s", argv[2], argv[3], argv[4]);
+	sprintf((char *)arguments, "%s;%s;%s", argv[2], argv[3], argv[4]);
 
 	// Some debug
 	printf("argv 2 = %s\nargv 3 = %s\nargv 4 = %s", argv[2], argv[3], argv[4]);
