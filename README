@@ -1,4 +1,5 @@
 COPYRIGHT (c) 2010 Yann Sionneau <yann dot sionneau at telecom-sudparis dot eu>
+Special thanks to ubitux for helping a *lot* on the Makefile
 
 This is a simple proof of concept software that does Woman in the middle attack.
 
