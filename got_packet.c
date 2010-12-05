@@ -106,9 +106,9 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 	// We fill the eth_pack struct with the ethernet header of our packet
 	memcpy(&eth_pack, packet, sizeof(struct eth_hdr));
 
-
-	type = eth_pack.eth_type >> 8;
-	type |= eth_pack.eth_type << 8;
+	type = ntohs(eth_pack.eth_type);
+//	type = eth_pack.eth_type >> 8;
+//	type |= eth_pack.eth_type << 8;
 
 	printf("src : ");
 	print_mac_address(eth_pack.eth_src);
