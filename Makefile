@@ -9,8 +9,12 @@ all: $(NAME)
 
 $(NAME): $(OBJ)
 
+$(OBJ): $(NAME).h
+
 clean:
 	rm -f $(OBJ)
 
 distclean: clean
 	rm -f $(NAME)
+
+re: distclean all
