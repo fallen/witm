@@ -1,0 +1,7 @@
+To compile witm you must modify the variables in Makefile.include
+according to your system configuration.
+
+Dependencies : 
+
+- libdumbnet >= 1.8 ( http://libdumbnet.sourcearchive.com/ )
+- libpcap >= 1.1.1 ( http://www.tcpdump.org/ )
