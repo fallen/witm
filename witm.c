@@ -37,15 +37,6 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 	
-	pcap_datalink(handle);	
-
-/*	packet = pcap_next(handle, &header);
-
-	printf("Got a packet with length of [%d]\n", header.len);
-
-	pcap_close(handle);
-*/
-
 	printf("Checking internal stuff...\n");
 
 	eth_addr_t router_addr;
