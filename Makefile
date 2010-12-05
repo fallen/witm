@@ -1,12 +1,16 @@
-include Makefile.include
+NAME = witm
+CFLAGS += -Wall -Wextra -O3 `pcap-config --cflags` `dnet-config --cflags`
+LDLIBS += `pcap-config --libs` `dnet-config --libs`
 
-CFLAGS += -Wall -Wextra -O3 -g -I${LIBDUMBNET_INCLUDE_PATH}
-LDLIBS += -lpcap
+SRC = $(NAME).c got_packet.c forward.c
+OBJ = $(SRC:.c=.o)
 
-witm: witm.o got_packet.o forward.o
+all: $(NAME)
+
+$(NAME): $(OBJ)
 
 clean:
-	rm -rf *.o
+	rm -f $(OBJ)
 
 distclean: clean
-	rm -rf witm
+	rm -f $(NAME)
