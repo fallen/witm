@@ -11,13 +11,14 @@
 
 pcap_t *handle;
 eth_addr_t my_mac_addr;
+eth_addr_t router_mac_addr;
 
 int main(int argc, char **argv) {
 	int ret;
 	bpf_u_int32 netp;
 	bpf_u_int32 maskp;
 	char errbuf[PCAP_ERRBUF_SIZE];
-	unsigned char arguments[51];
+	unsigned char arguments[67];
 
 	if (argc < 5) {
 		printf("usage : witm networkInterface routerIpAddress routerMacAddress yourMacAddress\n");
@@ -42,13 +43,14 @@ int main(int argc, char **argv) {
 
 	eth_addr_t router_addr;
 	string_to_mac_addr(argv[3], &router_addr);
+	string_to_mac_addr(argv[3], &router_mac_addr);
 	printf("Router MAC addr : ");
 	print_mac_address(router_addr);
 	printf("\n\n");
-	sprintf((char *)arguments, "%s;%s;%s", argv[2], argv[3], argv[4]);
+	sprintf((char *)arguments, "%s;%s;%s;%s", argv[2], argv[3], argv[4], argv[5]);
 
 	// Some debug
-	printf("argv 2 = %s\nargv 3 = %s\nargv 4 = %s", argv[2], argv[3], argv[4]);
+	printf("argv 2 = %s\nargv 3 = %s\nargv 4 = %s\nargv 5 = %s\n", argv[2], argv[3], argv[4], argv[5]);
 	printf("arguments = %s\n", arguments);
 
 	printf("\n\n sizeof(struct arp_hdr) = %lu\n", sizeof(struct arp_hdr));
