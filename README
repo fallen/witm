@@ -2,8 +2,7 @@ COPYRIGHT (c) 2010 Yann Sionneau <yann dot sionneau at telecom-sudparis dot eu>
 Special thanks to ubitux for helping a *lot* on the Makefile
 and to Stéphanie Ouillon for testing, motivating, support and for all the Fish !
 
-
-This is a simple proof of concept software that does Woman in the middle attack.
+This is a simple proof of concept software which does "Woman in the middle" attack.
 
 Using this, you can take place of the router, in order to watch the traffic of the other persons of your network.
 
@@ -15,3 +14,50 @@ You go from this :
 To this : 
 
 {Internet} <--> <Router> <--> You <--> Target
+
+How it works : 
+
+1°) enable routing/forwarding on your system
+	On GNU/Linux you have to do this as root : 
+	# echo '1' > /proc/sys/net/ipv4/ip_forward
+
+	On Mac OS X you have to do this as root : 
+	# sysctl -w net.inet.ip.forwarding=1
+	# chmod 777 /dev/bpf*
+
+
+2°) Start witm with the proper parameters : 
+	$ ./witm networkInterface RouterIpAddress RouterMacAddress YourMacAddress
+
+* On Mac OS X, if you are using the integrated wifi adaptater, networkInterface is en1, if you are using the wired network it's en0
+* On GNU/Linux if you are using the wired network, networkInterface is usually eth0
+
+To see the interface on Mac OS X do this : sudo route -n get 0.0.0.0 | grep interface.
+To see the interface on GNU/Linux do this : sudo route -n | grep 0.0.0.0 and you take the line beginning by "0.0.0.0", and the interface is the last word of the line.
+
+You can get the RouterIpAddress by doing : 
+
+	On Mac OS X : sudo route -n get 0.0.0.0 | grep gateway
+	On GNU/Linux : sudo ip route | grep default | cut -d' ' -f 3
+
+You can get the RouterMacAddress by doing : 
+
+	On Mac OS X : sudo arp -a | grep "(192.168.1.1)" | cut -d' ' -f4
+	On GNU/Linux : sudo arp -a | grep "(192.168.1.1)" | cut -d' ' -f4
+
+You can get your MacAddress by doing : 
+
+	On Mac OS X : sudo ifconfig en1 | grep ether | cut -d' ' -f2
+	On GNU/Linux : ifconfig eth0 | grep HWaddr  and take the last word of the line
+
+Mac addresses MUST be entered in THIS format : AB:CD:EF:GH:IJ:KL , so no '-', and if there is only one letter or figure before or after a ':', just put a 0 before it.
+
+3°) You can start wireshark and you will see the packets from everybody on your network !
+
+
+At the moment you can only see packets SENT by the people, not the packets RECEIVED, this will come soon ;)
+
+Have fun !
+
+BEWARE : it is illegal to use such a software on a network which is not yours, and to see communications that are not yours.
+This is for educational purposes ONLY !
