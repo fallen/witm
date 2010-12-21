@@ -12,6 +12,7 @@
 pcap_t *handle;
 eth_addr_t my_mac_addr;
 eth_addr_t router_mac_addr;
+eth_addr_t victim_mac_addr;
 
 int main(int argc, char **argv) {
 	int ret;
@@ -20,8 +21,8 @@ int main(int argc, char **argv) {
 	char errbuf[PCAP_ERRBUF_SIZE];
 	unsigned char arguments[67];
 
-	if (argc < 5) {
-		printf("usage : witm networkInterface routerIpAddress routerMacAddress yourMacAddress\n");
+	if (argc < 6) {
+		printf("usage : witm networkInterface routerIpAddress routerMacAddress yourMacAddress victimMacAddress\n");
 		exit(1);
 	}
 
@@ -44,6 +45,7 @@ int main(int argc, char **argv) {
 	eth_addr_t router_addr;
 	string_to_mac_addr(argv[3], &router_addr);
 	string_to_mac_addr(argv[3], &router_mac_addr);
+	string_to_mac_addr(argv[5], &victim_mac_addr);
 	printf("Router MAC addr : ");
 	print_mac_address(router_addr);
 	printf("\n\n");

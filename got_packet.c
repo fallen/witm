@@ -12,7 +12,7 @@
 
 extern pcap_t *handle;
 extern eth_addr_t my_mac_addr;
-
+extern eth_addr_t victim_mac_addr;
 
 struct arp_response {
 	struct eth_hdr ethernet_header;
@@ -154,16 +154,18 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 			//arp_request();
 
 		}
-	} /*else if (type == ETH_TYPE_IP) {
+	} else if (type == ETH_TYPE_IP) {
 		struct ip_hdr ip_header;
 		memcpy(&ip_header, packet + sizeof(struct eth_hdr), sizeof(struct ip_hdr));
 
 		if ((memcmp(my_mac_addr.data, eth_pack.eth_dst.data, ETH_ADDR_LEN) == 0) && (ip_header.ip_dst != my_ip_addr)) {
 			if (memcmp(eth_pack.eth_src.data, router_mac_addr.data, ETH_ADDR_LEN) != 0) 
 				forward(packet, header->len, router_mac_addr);
+			else
+				forward(packet, header->len, victim_mac_addr);
 		}
 
-	}*/
+	}
 
 
 }
