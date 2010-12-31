@@ -29,7 +29,7 @@ void forward(const u_char *packet, size_t taille, eth_addr_t to) {
 	ret = pcap_sendpacket(handle, new_packet, taille);
 
 	if (ret < 0) {
-		printf("ERROR : failed to forward packet\n");
+		printf("\t ERROR : failed to forward packet\n");
 		exit(1);
 	}
 }
