@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 
 #include <dnet.h>
 
@@ -40,12 +41,20 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
+	printf("Loading plugins ...");
+	sync();
+	fflush(NULL);
+
 	ret = load_plugins();
 	
 	if (ret < 0) {
 		printf("Errors loading modules !\n");
 		exit(1);
 	}
+
+	printf(" [OK]\n");
+
+	show_plugins_info();
 
 //	printf("Checking internal stuff...\n");
 
