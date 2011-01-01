@@ -39,20 +39,27 @@ int main(int argc, char **argv) {
 		printf("ERROR : Couldn't open device %s: %s\n", argv[1], errbuf);
 		exit(1);
 	}
+
+	ret = load_plugins();
 	
-	printf("Checking internal stuff...\n");
+	if (ret < 0) {
+		printf("Errors loading modules !\n");
+		exit(1);
+	}
+
+//	printf("Checking internal stuff...\n");
 
 	eth_addr_t router_addr;
 	string_to_mac_addr(argv[3], &router_addr);
 	string_to_mac_addr(argv[3], &router_mac_addr);
 	string_to_mac_addr(argv[5], &victim_mac_addr);
-	printf("Router MAC addr : ");
+/*	printf("Router MAC addr : ");
 	print_mac_address(router_addr);
-	printf("\n\n");
+	printf("\n\n"); */
 	sprintf((char *)arguments, "%s;%s;%s;%s", argv[2], argv[3], argv[4], argv[5]);
 
 	// Some debug
-	printf("argv 2 = %s\nargv 3 = %s\nargv 4 = %s\nargv 5 = %s\n", argv[2], argv[3], argv[4], argv[5]);
+/*	printf("argv 2 = %s\nargv 3 = %s\nargv 4 = %s\nargv 5 = %s\n", argv[2], argv[3], argv[4], argv[5]);
 	printf("arguments = %s\n", arguments);
 
 	printf("\n\n sizeof(struct arp_hdr) = %lu\n", sizeof(struct arp_hdr));
@@ -60,9 +67,9 @@ int main(int argc, char **argv) {
 	printf("sizeof(struct arp_ethip) = %lu\n", sizeof(struct arp_ethip));
 
 	printf("Check DONE.\n");
-
+*/
 	pcap_loop(handle, -1, got_packet, arguments);
-	printf("WITM> v0.1\n\n");
+//	printf("WITM> v0.1\n\n");
 
 	return 0;
 }
