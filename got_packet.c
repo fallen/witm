@@ -6,7 +6,12 @@
 #include <arpa/inet.h>
 
 #include <string.h> // for eth_pack_hdr which uses memmove
+
+#ifdef DNET_NAME
+#include DNET_NAME
+#else
 #include <dnet.h> // to interprete the captures
+#endif
 
 #include "witm.h"
 
