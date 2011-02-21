@@ -2,8 +2,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <dnet.h>
 #include <pcap.h>
+
+#ifdef DNET_NAME
+#include DNET_NAME
+#else
+#include <dnet.h>
+#endif
 
 #include "witm.h"
 #define PLUGIN_FILENAME_MAX_LENGTH 255
