@@ -6,7 +6,12 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
+#ifdef DNET_NAME
+#warning name = DNET_NAME
+#include DNET_NAME
+#else
 #include <dnet.h>
+#endif
 
 #include "witm.h"
 

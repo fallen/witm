@@ -1,0 +1,15 @@
+#!/bin/sh
+DNET_PATH=`dnet-config --cflags | cut -d'I' -f2`
+DNET_NAME=dnet.h
+
+if [ -f "${DNET_PATH}/dumbnet.h" ]
+then
+	DNET_NAME=dumbnet.h
+fi
+
+cat > Makefile << EOF
+DNET_NAME = ${DNET_NAME}
+`cat Makefile.in`
+EOF
+
+echo "Now you can simply type make"
