@@ -57,7 +57,6 @@ int load_plugins(void) {
 
 	FILE *fp;
 	char plugin_file[] = "plugins";
-	int ret;
 	char plugin_lib_name[PLUGIN_FILENAME_MAX_LENGTH];
 	void *lib_pointer;
 	char *plugin_name;
@@ -70,8 +69,9 @@ int load_plugins(void) {
 	}
 
 	while ( !feof(fp) && (fgets(plugin_lib_name, PLUGIN_FILENAME_MAX_LENGTH, fp) != NULL) ) {
-		if (plugin_lib_name[strlen(plugin_lib_name) - 1] == '\n')
-			plugin_lib_name[strlen(plugin_lib_name) - 1] = '\0';
+    size_t plugin_lib_name_size = strlen(plugin_lib_name);
+		if (plugin_lib_name[plugin_lib_name_size - 1] == '\n')
+			plugin_lib_name[plugin_lib_name_size - 1] = '\0';
 		printf("\n\tLoading plugin %s\n", plugin_lib_name);
 		lib_pointer = dlopen(plugin_lib_name, RTLD_FIRST);
 		if (lib_pointer == NULL) {
