@@ -5,6 +5,7 @@
 *.exe
 *.dll
 .*.swp
+witm
 
 # Logs and databases #
 ######################
