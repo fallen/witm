@@ -148,7 +148,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 
 		opcode = ntohs(arp_header.ar_op);
 
-		target_ip_addr = ntohl(*(uint32_t *)arp_payload.ar_tpa);
+		target_ip_addr = ntohl(*(uint32_t *)(arp_payload.ar_tpa));
 //		printf("\ntarget_ip_addr = 0x%08X\n", target_ip_addr);
 //		printf("\nrouter_id_addr = 0x%08X\n", router_ip_addr);
 
