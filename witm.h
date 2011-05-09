@@ -15,4 +15,8 @@ void forward(const u_char *packet, size_t taille, eth_addr_t to);
 void arp_request(eth_addr_t to, eth_addr_t from, eth_addr_t sha, ip_addr_t spa, eth_addr_t tha, ip_addr_t tpa);
 int load_plugins(void);
 int add_plugin(char *name, char *author, void *lib);
+void arp_answer(eth_addr_t victim_mac, uint8_t *victim_ip, uint8_t *router_ip);
+
+void *poisoning_thread(void *);
+
 #endif
