@@ -67,7 +67,6 @@ int main(int argc, char **argv) {
 	printf("Check DONE.\n");
 
 	pcap_loop(handle, -1, got_packet, arguments);
-	printf("WITM> v0.1\n\n");
 
 	return 0;
 }
