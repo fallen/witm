@@ -17,17 +17,14 @@ To this :
 
 How it works : 
 
-1°) enable routing/forwarding on your system
-	On GNU/Linux you have to do this as root : 
-	# echo '1' > /proc/sys/net/ipv4/ip_forward
+1°) enable capturing on your system
 
 	On Mac OS X you have to do this as root : 
-	# sysctl -w net.inet.ip.forwarding=1
 	# chmod 777 /dev/bpf*
 
 
 2°) Start witm with the proper parameters : 
-	$ ./witm networkInterface RouterIpAddress RouterMacAddress YourMacAddress
+	$ ./witm networkInterface RouterIpAddress RouterMacAddress YouIpAddress YourMacAddress VictimIpAddress VictimMacAddress
 
 * On Mac OS X, if you are using the integrated wifi adaptater, networkInterface is en1, if you are using the wired network it's en0
 * On GNU/Linux if you are using the wired network, networkInterface is usually eth0
@@ -52,10 +49,7 @@ You can get your MacAddress by doing :
 
 Mac addresses MUST be entered in THIS format : AB:CD:EF:GH:IJ:KL , so no '-', and if there is only one letter or figure before or after a ':', just put a 0 before it.
 
-3°) You can start wireshark and you will see the packets from everybody on your network !
-
-
-At the moment you can only see packets SENT by the people, not the packets RECEIVED, this will come soon ;)
+3°) You can start wireshark and you will see the packets from/to your victim !
 
 Have fun !
 
