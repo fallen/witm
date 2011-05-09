@@ -24,10 +24,10 @@ int main(int argc, char **argv) {
 	bpf_u_int32 netp;
 	bpf_u_int32 maskp;
 	char errbuf[PCAP_ERRBUF_SIZE];
-	unsigned char arguments[67];
+	unsigned char arguments[255];
 
 	if (argc < 6) {
-		printf("usage : witm networkInterface routerIpAddress routerMacAddress yourMacAddress victimMacAddress\n");
+		printf("usage : witm networkInterface routerIpAddress routerMacAddress yourIpAddress yourMacAddress victimIpAddress victimMacAddress\n");
 		exit(1);
 	}
 
@@ -47,17 +47,16 @@ int main(int argc, char **argv) {
 	
 	printf("Checking internal stuff...\n");
 
-	eth_addr_t router_addr;
-	string_to_mac_addr(argv[3], &router_addr);
 	string_to_mac_addr(argv[3], &router_mac_addr);
-	string_to_mac_addr(argv[5], &victim_mac_addr);
+	string_to_mac_addr(argv[5], &my_mac_addr);
+	string_to_mac_addr(argv[7], &victim_mac_addr);
 	printf("Router MAC addr : ");
-	print_mac_address(router_addr);
+	print_mac_address(router_mac_addr);
 	printf("\n\n");
-	sprintf((char *)arguments, "%s;%s;%s;%s", argv[2], argv[3], argv[4], argv[5]);
+	sprintf((char *)arguments, "%s;%s;%s;%s;%s;%s", argv[2], argv[3], argv[4], argv[5], argv[6], argv[7]);
 
 	// Some debug
-	printf("argv 2 = %s\nargv 3 = %s\nargv 4 = %s\nargv 5 = %s\n", argv[2], argv[3], argv[4], argv[5]);
+	printf("argv 2 = %s\nargv 3 = %s\nargv 4 = %s\nargv 5 = %s\nargv 6 = %s\nargv 7 = %s\n", argv[2], argv[3], argv[4], argv[5], argv[6], argv[7]);
 	printf("arguments = %s\n", arguments);
 
 	printf("\n\n sizeof(struct arp_hdr) = %lu\n", sizeof(struct arp_hdr));

