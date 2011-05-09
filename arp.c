@@ -24,7 +24,8 @@ struct arp_packet {
 
 void arp_request(eth_addr_t to, eth_addr_t from, eth_addr_t sha, ip_addr_t spa, eth_addr_t tha, ip_addr_t tpa) {
 
-	int ret, i;
+	int ret;
+	//int i;
 	struct arp_packet packet;
 	//uint32_t spa2, tpa2;
 
