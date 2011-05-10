@@ -15,6 +15,7 @@
 
 extern pcap_t *handle;
 extern eth_addr_t my_mac_addr;
+extern struct plugin *plugins;
 
 void forward(const u_char *packet, size_t size, eth_addr_t to) {
 
@@ -22,6 +23,7 @@ void forward(const u_char *packet, size_t size, eth_addr_t to) {
 	u_char *new_packet;
 	int ret;
 	size_t i;
+  struct plugin *p;
 
 	printf("We forward\n");
 	printf("\t size of the packet = %ld\n", size);
@@ -44,6 +46,12 @@ void forward(const u_char *packet, size_t size, eth_addr_t to) {
 
 	memcpy(header_ethernet->eth_src.data, my_mac_addr.data, ETH_ADDR_LEN);
 	memcpy(header_ethernet->eth_dst.data, to.data, ETH_ADDR_LEN);
+
+  for (p = plugins ; (p != NULL) && (p->next != NULL) ; p = p->next)
+  {
+    if (p->do_match(new_packet))
+      p->process_packet(new_packet);
+  }
 
 	ret = pcap_sendpacket(handle, new_packet, size);
 
