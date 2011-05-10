@@ -5,6 +5,8 @@ struct plugin {
 	char *name; // name of the plugin
 	char *author; // name of the plugin's author
 	void *lib; // pointer returned by dlopen()
+  int (*do_match)(const u_char *packet);
+  void (*process_packet)(u_char *packet);
 	struct plugin *next; // next plugin of the linked list
 };
 
@@ -16,6 +18,8 @@ void arp_request(eth_addr_t to, eth_addr_t from, eth_addr_t sha, ip_addr_t spa, 
 int load_plugins(void);
 int add_plugin(char *name, char *author, void *lib);
 void arp_answer(eth_addr_t victim_mac, uint8_t *victim_ip, uint8_t *router_ip);
+
+void show_plugins_info(void);
 
 void *poisoning_thread(void *);
 
