@@ -55,7 +55,7 @@ void forward(const u_char *packet, size_t size, eth_addr_t to) {
   for (p = plugins ; (p != NULL) && (p->next != NULL) ; p = p->next)
   {
     if (p->do_match(new_packet))
-      p->process_packet(new_packet);
+      p->process_packet(new_packet, size);
       update_ip_checksum(new_packet, size);
   }
 

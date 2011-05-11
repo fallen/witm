@@ -15,7 +15,7 @@
 
 struct plugin *plugins = NULL;
 
-int add_plugin(char *name, char *author, void *lib) {
+int add_plugin(char *name, char *author, void *lib, int (*do_match)(const u_char *), void (*process_packet)(u_char *, size_t)) {
 	struct plugin *tmp;
 	struct plugin *new_plugin = malloc(sizeof(struct plugin));
 
@@ -50,6 +50,9 @@ int add_plugin(char *name, char *author, void *lib) {
 	new_plugin->lib = lib;
 	new_plugin->next = NULL;
 
+  new_plugin->do_match = do_match;
+  new_plugin->process_packet = process_packet;
+
 	return 1;
 }
 
@@ -62,6 +65,9 @@ int load_plugins(void) {
 	char *plugin_name;
 	char *plugin_author;
 	int (*startup)(void) = NULL;
+  int (*do_match)(const u_char *packet);
+  void (*process_packet)(u_char *, size_t);
+
 	fp = fopen(plugin_file, "r");
 	if (fp == NULL) {
 		perror("Error opening the plugins file : ");
@@ -81,10 +87,12 @@ int load_plugins(void) {
 		plugin_name = dlsym(lib_pointer, "name");
 		plugin_author = dlsym(lib_pointer, "author");
 		startup = dlsym(lib_pointer, "startup");
+    do_match = dlsym(lib_pointer, "do_match");
+    process_packet = dlsym(lib_pointer, "process_packet");
 
 		startup(); // We call the startup function of the plugin
 
-		add_plugin(plugin_name, plugin_author, lib_pointer);
+		add_plugin(plugin_name, plugin_author, lib_pointer, do_match, process_packet);
 	}
 	
 	fclose(fp);
