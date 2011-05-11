@@ -1,5 +1,5 @@
 NAME = witm
-CFLAGS += -Wall -Wextra -O3 `pcap-config --cflags` `dnet-config --cflags` -DDNET_NAME=\<$(DNET_NAME)\>
+CFLAGS += -Wall -Wextra -g -O0 `pcap-config --cflags` `dnet-config --cflags` -DDNET_NAME=\<$(DNET_NAME)\>
 LDLIBS += `pcap-config --libs` `dnet-config --libs` -lpthread
 
 SRC = $(NAME).c got_packet.c forward.c arp.c poisoning.c plugins.c
