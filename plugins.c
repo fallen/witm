@@ -79,7 +79,7 @@ int load_plugins(void) {
 		if (plugin_lib_name[plugin_lib_name_size - 1] == '\n')
 			plugin_lib_name[plugin_lib_name_size - 1] = '\0';
 		printf("\n\tLoading plugin %s\n", plugin_lib_name);
-		lib_pointer = dlopen(plugin_lib_name, RTLD_FIRST);
+		lib_pointer = dlopen(plugin_lib_name, RTLD_LOCAL);
 		if (lib_pointer == NULL) {
 			printf("\nCannot open the shared object : %s because : %s\n", plugin_lib_name, dlerror());
 			return -1;

@@ -17,7 +17,7 @@ extern pcap_t *handle;
 extern eth_addr_t my_mac_addr;
 extern struct plugin *plugins;
 
-void update_ip_checksum(u_char *packet, size_t size)
+static inline void update_ip_checksum(u_char *packet, size_t size)
 {
   ip_checksum(packet + ETH_HDR_LEN, size - ETH_HDR_LEN);
 }
