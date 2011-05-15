@@ -1,23 +1,19 @@
-CFLAGS += -shared -Wall -Wextra -g -O0 -I../ `pcap-config --cflags` `dnet-config --cflags` -DDNET_NAME=\<$(DNET_NAME)\>
-LDLIBS += -shared `pcap-config --libs` `dnet-config --libs` -L../ -lpthread -ldl
+CFLAGS += -Wall -Wextra -g -O0 -I../ `pcap-config --cflags` `dnet-config --cflags` -DDNET_NAME=\<$(DNET_NAME)\>
+LDLIBS += `pcap-config --libs` `dnet-config --libs` -L../ -lpthread -ldl
 
 SRC = $(wildcard *.c)
-OBJ = $(SRC:.c=.o)
 SHAREDOBJ = $(SRC:.c=.so)
 PROTOCOLS = ../ip.o
 
 all: $(SHAREDOBJ)
 
-$(OBJ): $(SRC)
-	$(CC) -c $(CFLAGS) $(@:.o=.c)
-
-$(SHAREDOBJ): $(OBJ)
-	$(CC) $(LDLIBS) $(@:.so=.o) $(PROTOCOLS) -o $@
+%.so: %.o
+	$(CC) -shared $(LDLIBS) $< $(PROTOCOLS) -o $@
 
 clean:
-	rm -f $(OBJ)
+	rm -f *.o
 
 distclean: clean
-	rm -f $(SHAREDOBJ)
+	rm -f *.so
 
 re: distclean all
