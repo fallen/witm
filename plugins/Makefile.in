@@ -3,7 +3,7 @@ LDLIBS += `pcap-config --libs` `dnet-config --libs` -L../ -lpthread -ldl
 
 SRC = $(wildcard *.c)
 SHAREDOBJ = $(SRC:.c=.so)
-PROTOCOLS = ../ip.o
+PROTOCOLS = ../ip.o ../icmp.o ../http.o ../tcp.o
 
 all: $(SHAREDOBJ)
 

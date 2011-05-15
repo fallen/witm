@@ -8,7 +8,7 @@
 
 struct plugin *plugins = NULL;
 
-int add_plugin(char *name, char *author, void *lib, int (*do_match)(const u_char *), void (*process_packet)(u_char *, size_t)) {
+int add_plugin(char *name, char *author, void *lib, int (*do_match)(const u_char *, size_t), void (*process_packet)(u_char *, size_t)) {
 	struct plugin *tmp;
 	struct plugin *new_plugin = malloc(sizeof(struct plugin));
 
@@ -58,7 +58,7 @@ int load_plugins(void) {
 	char *plugin_name;
 	char *plugin_author;
 	int (*startup)(void) = NULL;
-  int (*do_match)(const u_char *packet);
+  int (*do_match)(const u_char *packet, size_t size);
   void (*process_packet)(u_char *, size_t);
 
 	fp = fopen(plugin_file, "r");
@@ -78,10 +78,40 @@ int load_plugins(void) {
 			return -1;
 		}
 		plugin_name = dlsym(lib_pointer, "name");
+    if (plugin_name == NULL)
+    {
+      printf("Error looking up name of the plugin\n");
+      exit(1);
+    }
+
 		plugin_author = dlsym(lib_pointer, "author");
+    if (plugin_author == NULL)
+    {
+      printf("Error looking up plugin_author of the plugin\n");
+      exit(1);
+    }
+  
 		startup = dlsym(lib_pointer, "startup");
+    if (startup == NULL)
+    {
+      printf("Error looking up startup of the plugin\n");
+      exit(1);
+    }
+  
     do_match = dlsym(lib_pointer, "do_match");
+    if (do_match == NULL)
+    {
+      printf("Error looking up do_match of the plugin\n");
+      exit(1);
+    }
+  
     process_packet = dlsym(lib_pointer, "process_packet");
+    if (process_packet == NULL)
+    {
+      printf("Error looking up process_packet of the plugin\n");
+      exit(1);
+    }
+  
 
 		startup(); // We call the startup function of the plugin
 

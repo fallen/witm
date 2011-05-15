@@ -3,7 +3,7 @@
 
 #include "witm.h"
 
-int is_ip_packet(u_char *packet, size_t size);
-static inline void update_ip_checksum(u_char *packet, size_t size);
+int is_ip_packet(const u_char *packet, size_t size);
+void ip_postprocess(u_char *packet, size_t size);
 
 #endif

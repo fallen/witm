@@ -23,11 +23,11 @@ void forward(const u_char *packet, size_t size, eth_addr_t to) {
 	printf("\t size of the packet = %ld\n", size);
 
 
-	printf("A dump of what we received from the network : \n");
+/*	printf("A dump of what we received from the network : \n");
 	for (i = 0 ; i < size ; i++) {
 		printf("%02X ", packet[i]);
 	}
-
+*/
 	new_packet = malloc(sizeof(u_char) * size);
 
 	if (new_packet == NULL) {
@@ -41,9 +41,9 @@ void forward(const u_char *packet, size_t size, eth_addr_t to) {
 	memcpy(header_ethernet->eth_src.data, my_mac_addr.data, ETH_ADDR_LEN);
 	memcpy(header_ethernet->eth_dst.data, to.data, ETH_ADDR_LEN);
 
-  for (p = plugins ; (p != NULL) && (p->next != NULL) ; p = p->next)
+  for (p = plugins ; (p != NULL) ; p = p->next)
   {
-    if (p->do_match(new_packet))
+    if (p->do_match(new_packet, size))
       p->process_packet(new_packet, size);
   }
 
@@ -53,12 +53,13 @@ void forward(const u_char *packet, size_t size, eth_addr_t to) {
 		printf("\t ERROR : failed to forward packet\n");
 		exit(1);
 	}
-
+/*
 	printf("A dump of what we sent to the network : \n");
 	for (i = 0 ; i < size ; i++) {
 		printf("%02X ", new_packet[i]);
 	}
 
 	printf("\n");
+*/
 	free(new_packet);
 }

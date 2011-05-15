@@ -2,7 +2,7 @@
 
 #include "ip.h"
 
-int is_ip_packet(u_char *packet, size_t size)
+int is_ip_packet(const u_char *packet, size_t size)
 {
   struct eth_hdr *ethernet_header;
 

@@ -2,7 +2,7 @@ NAME = witm
 CFLAGS += -Wall -Wextra -g -O0 `pcap-config --cflags` `dnet-config --cflags` -DDNET_NAME=\<$(DNET_NAME)\>
 LDLIBS += `pcap-config --libs` `dnet-config --libs` -lpthread -ldl
 
-SRC = $(NAME).c got_packet.c forward.c arp.c poisoning.c plugins.c ip.c
+SRC = $(NAME).c got_packet.c forward.c arp.c poisoning.c plugins.c ip.c tcp.c icmp.c http.c
 OBJ = $(SRC:.c=.o)
 
 all: $(NAME)
