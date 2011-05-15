@@ -2,13 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pcap.h>
-
-#ifdef DNET_NAME
-#include DNET_NAME
-#else
-#include <dnet.h>
-#endif
 
 #include "witm.h"
 #define PLUGIN_FILENAME_MAX_LENGTH 255
@@ -59,7 +52,7 @@ int add_plugin(char *name, char *author, void *lib, int (*do_match)(const u_char
 int load_plugins(void) {
 
 	FILE *fp;
-	char plugin_file[] = "plugins";
+	char plugin_file[] = "plugins.conf";
 	char plugin_lib_name[PLUGIN_FILENAME_MAX_LENGTH];
 	void *lib_pointer;
 	char *plugin_name;

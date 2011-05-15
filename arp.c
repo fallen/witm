@@ -1,15 +1,8 @@
 #include <stdio.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-#include <pcap.h>
 #include <string.h>
 #include <stdlib.h>
-
-#ifdef DNET_NAME
-#include DNET_NAME
-#else
-#include <dnet.h>
-#endif
 
 #include "witm.h"
 

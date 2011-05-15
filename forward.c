@@ -1,15 +1,8 @@
 #include <stdio.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-#include <pcap.h>
 #include <string.h>
 #include <stdlib.h>
-
-#ifdef DNET_NAME
-#include DNET_NAME
-#else
-#include <dnet.h>
-#endif
 
 #include "witm.h"
 
@@ -17,10 +10,6 @@ extern pcap_t *handle;
 extern eth_addr_t my_mac_addr;
 extern struct plugin *plugins;
 
-static inline void update_ip_checksum(u_char *packet, size_t size)
-{
-  ip_checksum(packet + ETH_HDR_LEN, size - ETH_HDR_LEN);
-}
 
 void forward(const u_char *packet, size_t size, eth_addr_t to) {
 
@@ -56,7 +45,6 @@ void forward(const u_char *packet, size_t size, eth_addr_t to) {
   {
     if (p->do_match(new_packet))
       p->process_packet(new_packet, size);
-      update_ip_checksum(new_packet, size);
   }
 
 	ret = pcap_sendpacket(handle, new_packet, size);
