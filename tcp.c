@@ -49,7 +49,7 @@ static inline void update_tcp_checksum(u_char *packet, size_t size)
   printf("LOL");
   tph->tcp_length = size - ETH_HDR_LEN - IP_HDR_LEN;
   printf("LOL");
-  memcpy(tph + 12, tcp_header, tph->tcp_length); 
+  memcpy(tph->tcp_segment, tcp_header, tph->tcp_length); 
   printf("LOL");
   pseudo_header_length = 12 + tph->tcp_length;
 
@@ -61,7 +61,9 @@ static inline void update_tcp_checksum(u_char *packet, size_t size)
 
   for ( i = 0 ; i < pseudo_header_length + padd ; i += 2)
   {
-    word16 = ( ( ((uint16_t *)tph)[i] << 8) & 0xFF00 ) + ( ((uint16_t *)tph)[i + 1] & 0xFF ); 
+//    word16 = ( ( ((uint8_t *)tph)[i] << 8) & 0xFF00 ) + ( ((uint8_t *)tph)[i + 1] & 0xFF ); 
+
+    word16 = *((uint16_t *)(((uint8_t *)tph) + i));
     checksum += (uint32_t)word16; 
   }   
 

@@ -2,6 +2,7 @@
 #define __TCP_H__
 
 #include "witm.h"
+#include "ip.h"
 
 struct tcp_pseudo_header
 {
