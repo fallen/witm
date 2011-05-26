@@ -61,7 +61,7 @@ static inline void update_tcp_checksum(u_char *packet, size_t size)
 
   for ( i = 0 ; i < pseudo_header_length + padd ; i += 2)
   {
-    checksum += ntohs( *((uint16_t *)(tph + i)) ); 
+    checksum += ntohs( *((uint16_t *)((char *)tph + i)) ); 
   }   
 
   checksum = ~checksum;
