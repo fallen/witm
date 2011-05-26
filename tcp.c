@@ -21,7 +21,7 @@ static inline void update_tcp_checksum(u_char *packet, size_t size)
   struct tcp_pseudo_header *tph;
   struct ip_hdr *ip_header;
   struct tcp_hdr *tcp_header;
-  uint32_t checksum = 0;
+  uint16_t checksum = 0;
   uint8_t padd = 0;
   uint16_t pseudo_header_length;
   uint16_t word16;
@@ -61,18 +61,12 @@ static inline void update_tcp_checksum(u_char *packet, size_t size)
 
   for ( i = 0 ; i < pseudo_header_length + padd ; i += 2)
   {
-//    word16 = ( ( ((uint8_t *)tph)[i] << 8) & 0xFF00 ) + ( ((uint8_t *)tph)[i + 1] & 0xFF ); 
-
-    word16 = *((uint16_t *)(((uint8_t *)tph) + i));
-    checksum += (uint32_t)word16; 
+    checksum += ntohs( *((uint16_t *)(tph + i)) ); 
   }   
 
-  while (checksum >> 16) 
-    checksum = (checksum & 0xFFFF) + (checksum >> 16); 
- 
   checksum = ~checksum;
   free(tph);
-  tcp_header->th_sum = (uint16_t)checksum;
+  tcp_header->th_sum = htons(checksum);
 
   printf("\n\nTCP checksum is now : %04X\n\n", tcp_header->th_sum);
 }
