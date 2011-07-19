@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "witm.h"
+#include <witm.h>
 
 extern pcap_t *handle;
 extern eth_addr_t my_mac_addr;
